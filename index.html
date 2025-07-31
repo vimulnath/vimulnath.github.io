@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI Personality Quiz</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .ghibli-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.5;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .question {
+            color: #4a5568;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .option.selected {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .result-card {
+            text-align: center;
+        }
+
+        .mbti-type {
+            font-size: 4em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .spectrum-container {
+            margin: 30px 0;
+        }
+
+        .spectrum-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        #visualization {
+            margin: 30px auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-leaf {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(76, 175, 80, 0.6);
+            border-radius: 50% 10px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="ghibli-bg" id="ghibliBg"></div>
+    <div class="floating-elements" id="floatingElements"></div>
+    
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div class="card" id="welcomeScreen">
+            <h1>🌸 MBTI Personality Quiz 🌸</h1>
+            <p class="question">Discover your personality type through a magical journey of self-discovery</p>
+            <button class="btn" onclick="startQuiz()">Begin Your Journey</button>
+        </div>
+
+        <!-- User Info Screen -->
+        <div class="card hidden" id="userInfoScreen">
+            <h2>Tell us about yourself</h2>
+            <div class="input-group">
+                <label for="userName">What's your name?</label>
+                <input type="text" id="userName" placeholder="Enter your name">
+            </div>
+            <div class="input-group">
+                <label for="motherTongue">What's your mother tongue?</label>
+                <input type="text" id="motherTongue" placeholder="Your native language">
+            </div>
+            <div class="input-group">
+                <label for="hobbies">What are your favorite hobbies?</label>
+                <input type="text" id="hobbies" placeholder="Reading, painting, hiking...">
+            </div>
+            <button class="btn" onclick="startQuestions()">Continue</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div class="card hidden" id="quizScreen">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <h2 id="questionNumber">Question 1 of 10</h2>
+            <div class="question" id="questionText"></div>
+            <div class="options" id="optionsContainer"></div>
+            <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>Next</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="card hidden" id="resultsScreen">
+            <div class="result-card">
+                <h2>Your Personality Type</h2>
+                <div class="mbti-type" id="mbtiResult"></div>
+                <div id="visualization"></div>
+                <p id="personalityDescription"></p>
+                <button class="btn" onclick="restartQuiz()">Take Quiz Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentQuestion = 0;
+        let userInfo = {};
+        let answers = [];
+        let mbtiScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+
+        // Ghibli-style background images (using CSS gradients to simulate landscapes)
+        const backgrounds = [
+            'linear-gradient(135deg, #a8e6cf 0%, #dcedc1 50%, #ffd3a5 100%)',
+            'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 50%, #fd79a8 100%)',
+            'linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #a29bfe 100%)',
+            'linear-gradient(135deg, #55a3ff 0%, #003d82 50%, #1e3c72 100%)',
+            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        ];
+
+        // MBTI Questions with scoring
+        const questions = [
+            {
+                text: "At a party, you would rather:",
+                options: [
+                    { text: "Talk to many different people throughout the evening", scores: { E: 2 } },
+                    { text: "Have deep conversations with a few close friends", scores: { I: 2 } }
+                ]
+            },
+            {
+                text: "When making decisions, you typically:",
+                options: [
+                    { text: "Go with your gut feeling and intuition", scores: { F: 1, N: 1 } },
+                    { text: "Analyze all the facts and logical outcomes", scores: { T: 2 } }
+                ]
+            },
+            {
+                text: "You prefer to:",
+                options: [
+                    { text: "Have a detailed plan before starting any project", scores: { J: 2 } },
+                    { text: "Keep your options open and adapt as you go", scores: { P: 2 } }
+                ]
+            },
+            {
+                text: "When learning something new, you prefer:",
+                options: [
+                    { text: "Understanding the big picture and possibilities first", scores: { N: 2 } },
+                    { text: "Learning step-by-step with concrete examples", scores: { S: 2 } }
+                ]
+            },
+            {
+                text: "You feel more energized after:",
+                options: [
+                    { text: "Spending time with a group of people", scores: { E: 2 } },
+                    { text: "Having some quiet time alone", scores: { I: 2 } }
+                ]
+            },
+            {
+                text: "When working on a team project, you:",
+                options: [
+                    { text: "Focus on how decisions affect people's feelings", scores: { F: 2 } },
+                    { text: "Focus on the most logical and efficient approach", scores: { T: 2 } }
+                ]
+            },
+            {
+                text: "Your ideal weekend would be:",
+                options: [
+                    { text: "Spontaneous adventures and trying new things", scores: { P: 1, E: 1 } },
+                    { text: "Following a planned schedule of enjoyable activities", scores: { J: 2 } }
+                ]
+            },
+            {
+                text: "You're more interested in:",
+                options: [
+                    { text: "What could be - future possibilities and innovations", scores: { N: 2 } },
+                    { text: "What is - current realities and practical applications", scores: { S: 2 } }
+                ]
+            },
+            {
+                text: "When giving feedback to someone, you:",
+                options: [
+                    { text: "Consider their feelings and deliver it gently", scores: { F: 2 } },
+                    { text: "Give direct, honest feedback focused on improvement", scores: { T: 2 } }
+                ]
+            },
+            {
+                text: "You prefer environments that are:",
+                options: [
+                    { text: "Structured with clear expectations and deadlines", scores: { J: 2 } },
+                    { text: "Flexible with room for creativity and spontaneity", scores: { P: 2 } }
+                ]
+            }
+        ];
+
+        // MBTI type descriptions
+        const typeDescriptions = {
+            "INTJ": "The Architect - Strategic, analytical, and independent thinkers.",
+            "INTP": "The Thinker - Innovative, curious, and love theoretical concepts.",
+            "ENTJ": "The Commander - Bold, strategic leaders who love organizing people.",
+            "ENTP": "The Debater - Smart, curious thinkers who love intellectual challenges.",
+            "INFJ": "The Advocate - Creative, insightful, and principled idealists.",
+            "INFP": "The Mediator - Poetic, kind, and altruistic, always seeking harmony.",
+            "ENFJ": "The Protagonist - Charismatic, inspiring leaders and mentors.",
+            "ENFP": "The Campaigner - Enthusiastic, creative, and people-focused.",
+            "ISTJ": "The Logistician - Practical, fact-minded, and highly reliable.",
+            "ISFJ": "The Protector - Warm, dedicated, and always ready to protect others.",
+            "ESTJ": "The Executive - Excellent administrators who love organizing.",
+            "ESFJ": "The Consul - Extraordinarily caring, social, and popular people.",
+            "ISTP": "The Virtuoso - Bold, practical experimenters and masters of tools.",
+            "ISFP": "The Adventurer - Flexible, charming artists ready to explore.",
+            "ESTP": "The Entrepreneur - Smart, energetic, and perceptive people.",
+            "ESFP": "The Entertainer - Spontaneous, energetic, and enthusiastic."
+        };
+
+        function startQuiz() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('userInfoScreen').classList.remove('hidden');
+            changeBackground();
+            createFloatingElements();
+        }
+
+        function startQuestions() {
+            userInfo.name = document.getElementById('userName').value;
+            userInfo.motherTongue = document.getElementById('motherTongue').value;
+            userInfo.hobbies = document.getElementById('hobbies').value;
+
+            if (!userInfo.name || !userInfo.motherTongue || !userInfo.hobbies) {
+                alert('Please fill in all fields to continue!');
+                return;
+            }
+
+            document.getElementById('userInfoScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('questionNumber').textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+            document.getElementById('questionText').textContent = question.text;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option.text;
+                optionDiv.onclick = () => selectOption(index);
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            updateProgressBar();
+            changeBackground();
+            document.getElementById('nextBtn').disabled = true;
+        }
+
+        function selectOption(optionIndex) {
+            // Remove previous selection
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selection to clicked option
+            document.querySelectorAll('.option')[optionIndex].classList.add('selected');
+            
+            // Store the answer
+            answers[currentQuestion] = optionIndex;
+            
+            // Enable next button
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            // Calculate scores for current question
+            const question = questions[currentQuestion];
+            const selectedOption = question.options[answers[currentQuestion]];
+            
+            Object.keys(selectedOption.scores).forEach(trait => {
+                mbtiScores[trait] += selectedOption.scores[trait];
+            });
+
+            currentQuestion++;
+
+            if (currentQuestion < questions.length) {
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function calculateMBTI() {
+            let mbtiType = '';
+            
+            // E vs I
+            mbtiType += mbtiScores.E > mbtiScores.I ? 'E' : 'I';
+            
+            // S vs N
+            mbtiType += mbtiScores.S > mbtiScores.N ? 'S' : 'N';
+            
+            // T vs F
+            mbtiType += mbtiScores.T > mbtiScores.F ? 'T' : 'F';
+            
+            // J vs P
+            mbtiType += mbtiScores.J > mbtiScores.P ? 'J' : 'P';
+            
+            return mbtiType;
+        }
+
+        function getPercentages() {
+            const total_EI = mbtiScores.E + mbtiScores.I;
+            const total_SN = mbtiScores.S + mbtiScores.N;
+            const total_TF = mbtiScores.T + mbtiScores.F;
+            const total_JP = mbtiScores.J + mbtiScores.P;
+
+            return {
+                E: total_EI > 0 ? (mbtiScores.E / total_EI) * 100 : 50,
+                S: total_SN > 0 ? (mbtiScores.S / total_SN) * 100 : 50,
+                T: total_TF > 0 ? (mbtiScores.T / total_TF) * 100 : 50,
+                J: total_JP > 0 ? (mbtiScores.J / total_JP) * 100 : 50
+            };
+        }
+
+        function showResults() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+
+            const mbtiType = calculateMBTI();
+            document.getElementById('mbtiResult').textContent = mbtiType;
+            document.getElementById('personalityDescription').textContent = typeDescriptions[mbtiType];
+
+            createVisualization();
+            changeBackground();
+        }
+
+        function createVisualization() {
+            const percentages = getPercentages();
+            
+            new p5(function(p) {
+                p.setup = function() {
+                    const canvas = p.createCanvas(600, 400);
+                    canvas.parent('visualization');
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(14);
+                };
+
+                p.draw = function() {
+                    p.background(240, 248, 255, 200);
+                    
+                    // Draw the four spectrums
+                    const spectrums = [
+                        { label1: 'Introvert', label2: 'Extrovert', percentage: percentages.E, y: 80 },
+                        { label1: 'Sensing', label2: 'Intuition', percentage: 100 - percentages.S, y: 150 },
+                        { label1: 'Feeling', label2: 'Thinking', percentage: percentages.T, y: 220 },
+                        { label1: 'Perceiving', label2: 'Judging', percentage: percentages.J, y: 290 }
+                    ];
+
+                    spectrums.forEach((spectrum, index) => {
+                        drawSpectrum(p, spectrum, index);
+                    });
+                };
+
+                function drawSpectrum(p, spectrum, index) {
+                    const y = spectrum.y;
+                    const barWidth = 400;
+                    const barHeight = 20;
+                    const startX = (p.width - barWidth) / 2;
+                    
+                    // Draw background bar
+                    p.fill(220);
+                    p.noStroke();
+                    p.rect(startX, y - barHeight/2, barWidth, barHeight, 10);
+                    
+                    // Draw progress bar
+                    const colors = [
+                        [102, 126, 234], // Purple-blue
+                        [118, 75, 162],  // Purple
+                        [255, 107, 107], // Coral
+                        [54, 207, 201]   // Teal
+                    ];
+                    
+                    p.fill(colors[index][0], colors[index][1], colors[index][2]);
+                    const progressWidth = (spectrum.percentage / 100) * barWidth;
+                    p.rect(startX, y - barHeight/2, progressWidth, barHeight, 10);
+                    
+                    // Draw marker
+                    const markerX = startX + progressWidth;
+                    p.fill(50);
+                    p.ellipse(markerX, y, 12);
+                    p.fill(255);
+                    p.ellipse(markerX, y, 8);
+                    
+                    // Draw labels
+                    p.fill(50);
+                    p.textAlign(p.LEFT, p.CENTER);
+                    p.text(spectrum.label1, startX - 80, y);
+                    p.textAlign(p.RIGHT, p.CENTER);
+                    p.text(spectrum.label2, startX + barWidth + 80, y);
+                    
+                    // Draw percentage
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.fill(colors[index][0], colors[index][1], colors[index][2]);
+                    p.text(Math.round(spectrum.percentage) + '%', markerX, y - 35);
+                }
+            });
+        }
+
+        function changeBackground() {
+            const bg = document.getElementById('ghibliBg');
+            const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+            bg.style.background = randomBg;
+        }
+
+        function createFloatingElements() {
+            const container = document.getElementById('floatingElements');
+            
+            for (let i = 0; i < 15; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'floating-leaf';
+                leaf.style.left = Math.random() * 100 + '%';
+                leaf.style.top = Math.random() * 100 + '%';
+                leaf.style.animationDelay = Math.random() * 6 + 's';
+                leaf.style.animationDuration = (6 + Math.random() * 4) + 's';
+                container.appendChild(leaf);
+            }
+        }
+
+        function restartQuiz() {
+            // Reset all variables
+            currentQuestion = 0;
+            userInfo = {};
+            answers = [];
+            mbtiScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+
+            // Clear inputs
+            document.getElementById('userName').value = '';
+            document.getElementById('motherTongue').value = '';
+            document.getElementById('hobbies').value = '';
+
+            // Clear visualization
+            document.getElementById('visualization').innerHTML = '';
+
+            // Show welcome screen
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+
+            changeBackground();
+        }
+
+        // Initialize floating elements on page load
+        window.onload = function() {
+            createFloatingElements();
+            changeBackground();
+        };
+    </script>
+</body>
+</html>
