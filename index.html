@@ -300,7 +300,6 @@
             <h2 id="questionNumber">Question 1 of 10</h2>
             <div class="question" id="questionText"></div>
             <div class="options" id="optionsContainer"></div>
-            <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>Next</button>
         </div>
 
         <!-- Results Screen -->
@@ -322,14 +321,6 @@
                     <h3 style="color: #667eea; margin: 30px 0 20px 0;">📚 Personalized Recommendations</h3>
                     <div id="recommendationsContent" style="text-align: left; background: rgba(102, 126, 234, 0.1); padding: 20px; border-radius: 15px; margin: 20px 0;"></div>
                 </div>
-
-                <!-- API Key Input -->
-                <div id="apiKeySection">
-                    <h3 style="color: #667eea; margin: 30px 0 20px 0;">🔑 Enter Gemini API Key for Recommendations</h3>
-                    <input type="password" id="geminiApiKey" placeholder="Enter your Gemini API key" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; margin-bottom: 15px;">
-                    <p style="font-size: 0.9em; color: #666; margin-bottom: 20px;">Get your free API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #667eea;">Google AI Studio</a></p>
-                    <button class="btn" onclick="getRecommendations()" style="margin: 10px;">Get Recommendations</button>
-                </div>
                 
                 <button class="btn" onclick="restartQuiz()">Take Quiz Again</button>
             </div>
@@ -342,6 +333,9 @@
         let userInfo = {};
         let answers = [];
         let mbtiScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+        
+        // API Configuration - Update this key before deployment
+        const GEMINI_API_KEY = 'AIzaSyBcQCYLSj0Aug2xG7sr0WY8O4LGbPfHmJM';
 
         // Ghibli-style background images (using CSS gradients to simulate landscapes)
         const backgrounds = [
@@ -499,8 +493,10 @@
             // Store the answer
             answers[currentQuestion] = optionIndex;
             
-            // Enable next button
-            document.getElementById('nextBtn').disabled = false;
+            // Auto-advance to next question after a short delay for visual feedback
+            setTimeout(() => {
+                nextQuestion();
+            }, 500);
         }
 
         function nextQuestion() {
@@ -568,18 +564,13 @@
 
             createVisualization();
             changeBackground();
+            
+            // Automatically get recommendations
+            getRecommendations();
         }
 
         async function getRecommendations() {
-            const apiKey = AIzaSyBcQCYLSj0Aug2xG7sr0WY8O4LGbPfHmJM;
-            
-            if (!apiKey) {
-                alert('Please enter your Gemini API key to get personalized recommendations.');
-                return;
-            }
-
-            // Hide API key section and show loading
-            document.getElementById('apiKeySection').classList.add('hidden');
+            // Show loading
             document.getElementById('loadingRecommendations').classList.remove('hidden');
 
             const mbtiType = calculateMBTI();
@@ -598,7 +589,7 @@ Please format your response clearly with headings and explain why each recommend
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-goog-api-key': apiKey
+                        'X-goog-api-key': GEMINI_API_KEY
                     },
                     body: JSON.stringify({
                         contents: [
@@ -636,11 +627,15 @@ Please format your response clearly with headings and explain why each recommend
             } catch (error) {
                 console.error('Error getting recommendations:', error);
                 
-                // Hide loading and show API key section again
+                // Hide loading and show error message
                 document.getElementById('loadingRecommendations').classList.add('hidden');
-                document.getElementById('apiKeySection').classList.remove('hidden');
-                
-                alert('Sorry, there was an error getting your recommendations. Please check your API key and try again. Error: ' + error.message);
+                document.getElementById('recommendationsSection').classList.remove('hidden');
+                document.getElementById('recommendationsContent').innerHTML = `
+                    <div style="text-align: center; color: #e53e3e; padding: 20px;">
+                        <h4>Unable to fetch recommendations</h4>
+                        <p>Please check your API configuration. Error: ${error.message}</p>
+                    </div>
+                `;
             }
         }
 
@@ -759,14 +754,12 @@ Please format your response clearly with headings and explain why each recommend
             document.getElementById('userName').value = '';
             document.getElementById('motherTongue').value = '';
             document.getElementById('hobbies').value = '';
-            document.getElementById('geminiApiKey').value = '';
 
             // Clear visualization and recommendations
             document.getElementById('visualization').innerHTML = '';
             document.getElementById('recommendationsContent').innerHTML = '';
 
             // Reset visibility states
-            document.getElementById('apiKeySection').classList.remove('hidden');
             document.getElementById('loadingRecommendations').classList.add('hidden');
             document.getElementById('recommendationsSection').classList.add('hidden');
 
