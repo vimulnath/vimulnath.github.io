@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trauma Help Book Recommendations</title>
+    <title> Trauma Support Story Book Recommendations</title>
     <style>
         * {
             margin: 0;
@@ -17,9 +17,11 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 20px 0;
         }
 
         .background-circles {
@@ -56,6 +58,8 @@
             text-align: center;
             position: relative;
             z-index: 10;
+            margin: 20px auto;
+            max-height: none;
         }
 
         .quiz-header {
@@ -212,11 +216,32 @@
             100% { transform: rotate(360deg); }
         }
 
+        .supportive-message {
+            background: linear-gradient(135deg, #e8f5e8, #f0fdf0);
+            border: 2px solid #22c55e;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .supportive-title {
+            font-size: 24px;
+            color: #16a34a;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .supportive-text {
+            font-size: 18px;
+            color: #15803d;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
         .book-recommendations {
             margin-top: 25px;
         }
-
-        .book-item {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 15px;
@@ -225,7 +250,7 @@
             text-align: left;
         }
 
-        .book-title {
+        .book-item {
             font-weight: 600;
             color: #333;
             margin-bottom: 8px;
@@ -318,7 +343,11 @@
         </div>
         
         <div class="results-container" id="resultsContainer">
-            <h2 class="results-title">Recommended Story Books for You</h2>
+            <h2 class="results-title">Your Journey of Strength</h2>
+            <div class="supportive-message" id="supportiveMessage" style="display: none;">
+                <div class="supportive-title" id="supportiveTitle"></div>
+                <div class="supportive-text" id="supportiveText"></div>
+            </div>
             <div class="loading" id="loadingDiv">
                 <div class="spinner"></div>
                 <p>Finding the perfect books for you...</p>
@@ -466,6 +495,9 @@
                 }
             }
             
+            // Show supportive message
+            showSupportiveMessage(yesAnswers);
+            
             if (yesAnswers.length === 0) {
                 document.getElementById('loadingDiv').style.display = 'none';
                 document.getElementById('bookRecommendations').innerHTML = `
@@ -510,7 +542,7 @@
                 document.getElementById('loadingDiv').style.display = 'none';
                 
                 if (recommendations.length > 0) {
-                    let html = '';
+                    let html = '<h3 style="color: #333; margin-bottom: 20px; font-size: 22px;">Recommended Books for Your Healing Journey</h3>';
                     recommendations.forEach((rec, index) => {
                         html += `
                             <div class="book-item">
@@ -541,6 +573,58 @@
             }
         }
         
+        function showSupportiveMessage(categories) {
+            const supportiveMessages = {
+                'bullying': {
+                    title: 'You Are a Survivor and Warrior',
+                    message: 'You have been a lone wolf from childhood, facing challenges that others may never understand. Your resilience and strength in overcoming bullying shows the incredible person you are today. You are worthy of love, respect, and kindness.'
+                },
+                'physical abuse': {
+                    title: 'Your Strength is Remarkable',
+                    message: 'You have endured physical pain that no one should ever face, yet here you are - strong, brave, and seeking healing. Your courage to survive and thrive is truly inspiring. You deserve safety, peace, and love.'
+                },
+                'emotional abuse': {
+                    title: 'You Are Worthy and Valuable',
+                    message: 'Despite being told otherwise, you are incredibly valuable and worthy of love. You have survived emotional storms that would break many others. Your heart still beats with hope, and that is beautiful.'
+                },
+                'neglect': {
+                    title: 'You Are Enough, Always',
+                    message: 'You learned to take care of yourself when others failed to do so. Your independence and self-reliance are remarkable qualities. You deserved care then, and you deserve all the love and support now.'
+                },
+                'sexual abuse': {
+                    title: 'You Are Incredibly Strong',
+                    message: 'You are really strong person and I am proud of where you are. What happened to you was never your fault. Your courage to continue living and seeking healing shows your incredible inner strength. You are a survivor.'
+                },
+                'domestic violence': {
+                    title: 'You Chose Your Freedom',
+                    message: 'You witnessed or experienced things no one should endure in what should have been a safe space. Your strength in recognizing this and seeking better for yourself is courageous. You deserve a life filled with peace and genuine love.'
+                }
+            };
+            
+            let message = '';
+            let title = '';
+            
+            if (categories.length === 0) {
+                title = 'You Are Taking Care of Yourself';
+                message = 'It\'s wonderful that you\'re being proactive about your emotional well-being. Self-reflection and seeking supportive resources shows great wisdom and self-care.';
+            } else {
+                // Use the first category for the primary message
+                const primaryCategory = categories[0];
+                const supportiveMsg = supportiveMessages[primaryCategory];
+                title = supportiveMsg.title;
+                message = supportiveMsg.message;
+                
+                // If multiple categories, add an additional supportive note
+                if (categories.length > 1) {
+                    message += ' Your journey through multiple challenges has shaped you into an incredibly resilient person. You are stronger than you know.';
+                }
+            }
+            
+            document.getElementById('supportiveTitle').textContent = title;
+            document.getElementById('supportiveText').textContent = message;
+            document.getElementById('supportiveMessage').style.display = 'block';
+        }
+        
         function restartQuiz() {
             currentQuestion = 0;
             answers = {};
@@ -548,7 +632,10 @@
             document.getElementById('resultsContainer').style.display = 'none';
             document.getElementById('loadingDiv').style.display = 'flex';
             document.getElementById('bookRecommendations').innerHTML = '';
+            document.getElementById('supportiveMessage').style.display = 'none';
             displayQuestion();
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
         // Initialize the application
