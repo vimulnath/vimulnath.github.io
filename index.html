@@ -22,6 +22,7 @@
             overflow-x: hidden;
             overflow-y: auto;
             padding: 20px 0;
+            transition: background 0.5s ease;
         }
 
         .background-circles {
@@ -247,7 +248,54 @@
         }
 
         body.warm-background {
-            background: linear-gradient(135deg, #fef7e7, #fff0d6, #fce7d6);
+            background: linear-gradient(135deg, #fef7e7, #fff0d6, #fce7d6) !important;
+        }
+
+        .hypnotic-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: #222;
+        }
+
+        .circles {
+            margin: 0 auto;
+            width: 200px;
+            height: 200px;
+            border: 5px solid white;
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.8;
+        }
+
+        .one { animation: circles 2.4s infinite linear; }
+        .two { animation: circles 2.4s infinite linear; animation-delay: 0.3s; }
+        .three { animation: circles 2.4s infinite linear; animation-delay: 0.6s; }
+        .four { animation: circles 2.4s infinite linear; animation-delay: 0.9s; }
+        .five { animation: circles 2.4s infinite linear; animation-delay: 1.2s; }
+        .six { animation: circles 2.4s infinite linear; animation-delay: 1.5s; }
+        .seven { animation: circles 2.4s infinite linear; animation-delay: 1.8s; }
+        .eight { animation: circles 2.4s infinite linear; animation-delay: 2.1s; }
+        .nine { animation: circles 2.4s infinite linear; animation-delay: 2.4s; }
+
+        @keyframes circles {
+            from {
+                transform: translate(-50%, -50%) scale(0.1);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(6);
+                opacity: 0;
+            }
         }
 
         .book-item {
@@ -313,7 +361,17 @@
     </style>
 </head>
 <body>
-    <canvas id="hypnoticCanvas"></canvas>
+    <div class="hypnotic-background" id="hypnoticBackground">
+        <div class="circles one"></div>
+        <div class="circles two"></div>
+        <div class="circles three"></div>
+        <div class="circles four"></div>
+        <div class="circles five"></div>
+        <div class="circles six"></div>
+        <div class="circles seven"></div>
+        <div class="circles eight"></div>
+        <div class="circles nine"></div>
+    </div>
     
     <div class="quiz-container">
         <div class="quiz-section" id="quizSection">
@@ -358,7 +416,7 @@
     </div>
 
     <script>
-        const API_KEY = "API_KEY"; // Replace with your actual API key
+        const API_KEY = "AIzaSyBcQCYLSj0Aug2xG7sr0WY8O4LGbPfHmJM"; // Replace with your actual API key
         const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
         
         const questions = [
@@ -397,66 +455,14 @@
         let currentQuestion = 0;
         let answers = {};
         
-        let canvas, ctx;
-        let k = 0;
-        let animationId;
-        
-        function createHypnoticBackground() {
-            canvas = document.getElementById('hypnoticCanvas');
-            ctx = canvas.getContext('2d');
-            
-            function resizeCanvas() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-            
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-            
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                ctx.save();
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-                
-                k += 0.011;
-                
-                ctx.strokeStyle = 'black';
-                ctx.lineWidth = 1;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-                
-                for (let i = 0; i <= 450; i++) {
-                    const x = Math.cos(i * Math.PI / 180);
-                    const m = Math.sin(k) * 30;
-                    
-                    ctx.save();
-                    ctx.rotate(k);
-                    
-                    ctx.beginPath();
-                    ctx.arc(x + m, i + m, Math.abs(m), 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.restore();
-                }
-                
-                ctx.restore();
-                animationId = requestAnimationFrame(draw);
-            }
-            
-            draw();
-        }
-        
-        function stopHypnoticBackground() {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-            }
-        }
-        
         function createWarmBackground() {
             document.body.classList.add('warm-background');
-            stopHypnoticBackground();
-            canvas.style.display = 'none';
+            document.getElementById('hypnoticBackground').style.display = 'none';
+        }
+
+        function showHypnoticBackground() {
+            document.body.classList.remove('warm-background');
+            document.getElementById('hypnoticBackground').style.display = 'block';
         }
         
         function displayQuestion() {
@@ -677,9 +683,7 @@
             document.getElementById('supportiveMessage').style.display = 'none';
             
             // Restore hypnotic background
-            document.body.classList.remove('warm-background');
-            canvas.style.display = 'block';
-            createHypnoticBackground();
+            showHypnoticBackground();
             
             displayQuestion();
             // Scroll to top
@@ -688,7 +692,7 @@
         
         // Initialize the application
         window.onload = function() {
-            createHypnoticBackground();
+            showHypnoticBackground();
             displayQuestion();
         };
     </script>
