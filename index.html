@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Trauma Support Story Book Recommendations</title>
+    <title>Story Book Recommendations</title>
     <style>
         * {
             margin: 0;
@@ -34,17 +34,13 @@
             pointer-events: none;
         }
 
-        .circle {
-            position: absolute;
-            border-radius: 50%;
-            background-color: black;
-            opacity: 0.1;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        #hypnoticCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
         }
 
         .quiz-container {
@@ -250,6 +246,10 @@
             text-align: left;
         }
 
+        body.warm-background {
+            background: linear-gradient(135deg, #fef7e7, #fff0d6, #fce7d6);
+        }
+
         .book-item {
             font-weight: 600;
             color: #333;
@@ -313,7 +313,7 @@
     </style>
 </head>
 <body>
-    <div class="background-circles" id="backgroundCircles"></div>
+    <canvas id="hypnoticCanvas"></canvas>
     
     <div class="quiz-container">
         <div class="quiz-section" id="quizSection">
@@ -358,7 +358,7 @@
     </div>
 
     <script>
-        const API_KEY = "AIzaSyBcQCYLSj0Aug2xG7sr0WY8O4LGbPfHmJM"; // Replace with your actual API key
+        const API_KEY = "API_KEY"; // Replace with your actual API key
         const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
         
         const questions = [
@@ -397,27 +397,66 @@
         let currentQuestion = 0;
         let answers = {};
         
-        function createBackgroundCircles() {
-            const container = document.getElementById('backgroundCircles');
-            const circleCount = 15;
+        let canvas, ctx;
+        let k = 0;
+        let animationId;
+        
+        function createHypnoticBackground() {
+            canvas = document.getElementById('hypnoticCanvas');
+            ctx = canvas.getContext('2d');
             
-            for (let i = 0; i < circleCount; i++) {
-                const circle = document.createElement('div');
-                circle.className = 'circle';
-                
-                const size = Math.random() * 100 + 30;
-                const left = Math.random() * 100;
-                const top = Math.random() * 100;
-                const delay = Math.random() * 6;
-                
-                circle.style.width = size + 'px';
-                circle.style.height = size + 'px';
-                circle.style.left = left + '%';
-                circle.style.top = top + '%';
-                circle.style.animationDelay = delay + 's';
-                
-                container.appendChild(circle);
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
             }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                
+                k += 0.011;
+                
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                
+                for (let i = 0; i <= 450; i++) {
+                    const x = Math.cos(i * Math.PI / 180);
+                    const m = Math.sin(k) * 30;
+                    
+                    ctx.save();
+                    ctx.rotate(k);
+                    
+                    ctx.beginPath();
+                    ctx.arc(x + m, i + m, Math.abs(m), 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                ctx.restore();
+                animationId = requestAnimationFrame(draw);
+            }
+            
+            draw();
+        }
+        
+        function stopHypnoticBackground() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        }
+        
+        function createWarmBackground() {
+            document.body.classList.add('warm-background');
+            stopHypnoticBackground();
+            canvas.style.display = 'none';
         }
         
         function displayQuestion() {
@@ -487,6 +526,9 @@
             document.getElementById('quizSection').style.display = 'none';
             document.getElementById('resultsContainer').style.display = 'block';
             
+            // Switch to warm background
+            createWarmBackground();
+            
             const yesAnswers = [];
             for (const [questionId, answer] of Object.entries(answers)) {
                 if (answer === 'yes') {
@@ -542,7 +584,7 @@
                 document.getElementById('loadingDiv').style.display = 'none';
                 
                 if (recommendations.length > 0) {
-                    let html = '<h3 style="color: #333; margin-bottom: 20px; font-size: 22px;">Recommended Books for Your Healing Journey</h3>';
+                    let html = '<h3 style="color: #8b5a2b; margin-bottom: 20px; font-size: 22px; text-align: center;">Recommended Books for Your Healing Journey</h3>';
                     recommendations.forEach((rec, index) => {
                         html += `
                             <div class="book-item">
@@ -633,6 +675,12 @@
             document.getElementById('loadingDiv').style.display = 'flex';
             document.getElementById('bookRecommendations').innerHTML = '';
             document.getElementById('supportiveMessage').style.display = 'none';
+            
+            // Restore hypnotic background
+            document.body.classList.remove('warm-background');
+            canvas.style.display = 'block';
+            createHypnoticBackground();
+            
             displayQuestion();
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -640,7 +688,7 @@
         
         // Initialize the application
         window.onload = function() {
-            createBackgroundCircles();
+            createHypnoticBackground();
             displayQuestion();
         };
     </script>
